@@ -3,12 +3,10 @@ library(psych)
 
 messagef <- function(...) message(sprintf(...))
 
-
 mus_vars <- master %>%
   select(starts_with("MUS")) %>%
   select(where(is.numeric)) %>%
   names()
-
 
 final_vars_orig <- c("often has the desire to make music.",
                      "has great enthusiasm for music.",
@@ -19,6 +17,15 @@ final_vars_orig <- c("often has the desire to make music.",
                      "shows difficulties in producing or reproducing music.",
                      "pays little attention while making music, so he/she does not realize if it sounds as intended.",
                      "has issues reproducing melodies he/she has heard before.")
+final_vars <- c("MUS.often_has_the_desire_to_m", 
+"MUS.has_great_enthusiasm_for_", 
+"MUS.enjoys_making_music_a_par", 
+"MUS.has_a_good_sense_of_timin", 
+"MUS.has_a_feeling_for_the_bea", 
+"MUS.has_good_hearing_ability_", 
+"MUS.shows_difficulties_in_pro", 
+"MUS.pays_little_attention_whi", 
+"MUS.has_issues_reproducing_me")
 
 final_cfa <- "
   F1 =~ MUS.often_has_the_desire_to_m + MUS.has_great_enthusiasm_for_ + MUS.enjoys_making_music_a_par 
@@ -68,7 +75,6 @@ iterative_fa <- function(data,
     as.data.frame() %>%
     rownames_to_column("var") %>%
     as_tibble()
-  browser()
   communalities <- names(efa$communalities[efa$communalities >= min_comm])
   complexities <- names(efa$complexity[efa$complexity <= max_complexity])
   
@@ -113,12 +119,25 @@ find_best_fa <- function(data,
   )
 }
 
-get_cfa_from_fa <- function(efa, min_loading = .7){
+get_cfa_from_efa <- function(efa, min_loading = .7){
   loadings <- efa$loadings %>%
     unclass() %>%
     as.data.frame() %>%
     rownames_to_column("var") %>%
     as_tibble() %>% 
-    pivot_longer(-var)
-  browser()
+    pivot_longer(-var) 
+
+  n_factors <- n_distinct(loadings$name)
+  
+  loadings <- loadings %>% 
+    filter(abs(value) >= min_loading)
+  n_factors_new <- loadings %>% count(name) %>% filter(n > 1) %>% pull(name) %>% n_distinct()
+  if(n_factors_new != n_factors){
+    message("Not all factors represented with at least to variables. Consider lowering min_loadings")
+  }
+  map_chr(unique(loadings$name), function(fact){
+    def <- loadings %>% filter(name == fact) %>% pull(var) %>% paste(collapse = " + ")
+    sprintf("%s =~ %s", fact, def)
+  }) %>% 
+    paste(collapse = "\n")
 }
