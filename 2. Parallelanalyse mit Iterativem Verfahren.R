@@ -10,11 +10,11 @@ par(mar = c(1, 1, 1, 1))
 n.ger <- sum(data.german$`G1Q00001. Have you read and understood the Research Participant Information Sheet?` == "A1", na.rm=TRUE)
 data.scale <- subset(data.german, select=c(26:57,59:83))
 
-step1 <- (names(data.scale) %>% str_split_fixed("The child... ", 2))[,2]
-step3 <- (trimws(step1) %>% str_split_fixed(" ", 2))[,2] %>% sapply(function(x) substr(x, 1, nchar(x) - 2), USE.NAMES = F)
-step4 <- snakecase::to_snake_case(step3)
-names(data.scale) <- step4
-names(data.scale) <- sprintf("V%d", 1:length(data.scale))
+# step1 <- (names(data.scale) %>% str_split_fixed("The child... ", 2))[,2]
+# step3 <- (trimws(step1) %>% str_split_fixed(" ", 2))[,2] %>% sapply(function(x) substr(x, 1, nchar(x) - 2), USE.NAMES = F)
+# step4 <- snakecase::to_snake_case(step3)
+# names(data.scale) <- step4
+# names(data.scale) <- sprintf("V%d", 1:length(data.scale))
 
 #EnglischeDeutscheNamen <- read_excel("EnglischeDeutscheNamen.xlsx", sheet = "Tabelle2")
 #DeutscheNamen <- EnglischeDeutscheNamen$Deutsch

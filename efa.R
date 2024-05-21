@@ -32,15 +32,22 @@ final_cfa <- "
   F2 =~ MUS.has_a_good_sense_of_timin + MUS.has_a_feeling_for_the_bea + MUS.has_good_hearing_ability_ 
   F3 =~ MUS.shows_difficulties_in_pro + MUS.pays_little_attention_whi + MUS.has_issues_reproducing_me
 "
+
+neutral_var_names <- function(data, prefix = "V"){
+  data %>% set_names(sprintf("%s%02d", prefix, 1:length(.)))
+}
 iterative_fa <- function(data,
-                         vars,
+                         vars = NULL,
                          min_loading = .3,
                          min_comm = .4,
                          min_good = 1,
                          max_complexity = 2,
                          plot = F,
                          mode = c("vars", "efa")) {
-  library(psych)
+  if(is.null(vars)){
+    vars <- data %>% select(where(is.numeric)) %>% names()
+    messagef("Using all %d numerical columns", length(vars))
+  }
   data <- data %>% select(all_of(vars))
   n_obs <- nrow(data)
   mode <- match.arg(mode)
@@ -64,7 +71,7 @@ iterative_fa <- function(data,
   )
   
   n_factors <- parallel[["nfact"]]
-  efa <- fa(data, nfactors = n_factors)
+  efa <- psych::fa(data, nfactors = n_factors)
   
   if (mode == "efa") {
     return(efa)
@@ -94,11 +101,15 @@ iterative_fa <- function(data,
 }
 
 find_best_fa <- function(data,
-                         vars,
+                         vars = NULL,
                          min_loading = .3,
                          min_comm = .4,
                          min_good = 1,
                          max_complexity = 2) {
+  if(is.null(vars)){
+    vars <- data %>% select(where(is.numeric)) %>% names()
+    messagef("Using all %d numerical columns", length(vars))
+  }
   change <- 999
   cur_vars <- vars
   last_vars <- vars
